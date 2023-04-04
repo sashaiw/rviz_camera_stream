@@ -1,83 +1,126 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(rviz_camera_stream)
 
-find_package(catkin REQUIRED COMPONENTS
-  image_transport
-  roscpp
-  roslint
-  rviz
-  sensor_msgs
-)
-
-roslint_cpp()
-## Compiler flags
-# if(CMAKE_COMPILER_IS_GNUCXX)
-#  set(CMAKE_CXX_FLAGS "-std=c++0x")  ## Enable C++11
-# endif()
-# set(CMAKE_CXX_FLAGS "-Wall -Werror ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
-
-## This plugin includes Qt widgets, so we must include Qt.
-## We'll use the version that rviz used so they are compatible.
-if(rviz_QT_VERSION VERSION_LESS "5")
-  message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
-  ## pull in all required include dirs, define QT_LIBRARIES, etc.
-  include(${QT_USE_FILE})
-else()
-  message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  # find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
-  find_package(Qt5 ${rviz_QT_VERSION} REQUIRED Core Widgets)
-  ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
-  set(QT_LIBRARIES Qt5::Widgets)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
 endif()
 
-## Avoid defining "emit", "slots",
-## etc for Qt signals because they can conflict with boost signals
-add_definitions(-DQT_NO_KEYWORDS)
-
-catkin_package(
-  CATKIN_DEPENDS
-  roscpp
-  rviz
-)
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
-
-if(rviz_QT_VERSION VERSION_LESS "5")
-  qt4_wrap_cpp(MOC_FILES
-    include/${PROJECT_NAME}/camera_display.h
-  )
-else()
-  qt5_wrap_cpp(MOC_FILES
-    include/${PROJECT_NAME}/camera_display.h
-  )
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
-add_library(${PROJECT_NAME}
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
+find_package(yaml_cpp_vendor REQUIRED)
+
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+
+find_package(rcpputils)
+find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
+
+find_package(pluginlib REQUIRED)
+find_package(rviz_common REQUIRED)
+find_package(rviz_default_plugins REQUIRED)
+find_package(rviz_rendering REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(image_transport REQUIRED)
+
+set(CMAKE_AUTOMOC ON)
+set(rviz_camera_stream_headers_to_moc
+  include/rviz_camera_stream/camera_display.h
+)
+
+foreach(header "${rviz_camera_stream_headers_to_moc}")
+  qt5_wrap_cpp(rviz_camer_stream_moc_files "${header}")
+endforeach()
+
+set(rviz_camera_stream_source_files
   src/camera_display.cpp
-  ${MOC_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${QT_LIBRARIES}
+add_library(${PROJECT_NAME} SHARED
+  ${rviz_camera_stream_moc_files}
+  ${rviz_camera_stream_source_files}
 )
 
-# install
-install (TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+        ${Qt5Widgets_INCLUDE_DIRS}
+        )
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+        rviz_ogre_vendor::OgreMain
+        rviz_ogre_vendor::OgreOverlay
+        rviz_common::rviz_common
+        )
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE "RVIZ_CAMERA_STREAM_BUILDING_LIBRARY")
+
+ament_target_dependencies(${PROJECT_NAME}
+  PUBLIC
+  rcpputils
+  rclcpp
+  sensor_msgs
+  rviz_common
+  rviz_rendering
+  rviz_default_plugins
+  yaml_cpp_vendor
 )
 
-install(FILES
-  plugin_description.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
+
+ament_export_include_directories("include/${PROJECT_NAME}")
+
+ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
+
+ament_export_dependencies(
+  rcpputils
+  rclcpp
+  sensor_msgs
+  rviz_common
+  rviz_rendering
 )
 
-install(DIRECTORY config/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
-install(DIRECTORY launch/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+
+install(
+        DIRECTORY include/
+        DESTINATION include/${PROJECT_NAME}
+)
+install(
+        DIRECTORY launch config
+        DESTINATION share/${PROJECT_NAME}
+)
+
+# TODO: fix this
+#install(
+#        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/icons"
+#        DESTINATION "share/${PROJECT_NAME}"
+#)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # the following line skips the linter which checks for copyrights
+  # uncomment the line when a copyright and license is not present in all source files
+  #set(ament_cmake_copyright_FOUND TRUE)
+  # the following line skips cpplint (only works in a git repo)
+  # uncomment the line when this package is not in a git repo
+  #set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()

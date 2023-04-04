@@ -1,4 +1,6 @@
-<package>
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>rviz_camera_stream</name>
   <version>1.0.1</version>
   <description>
@@ -12,18 +14,17 @@
 
   <url type="website">https://github.com/lucasw/rviz_camera_stream</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>roslint</build_depend>
-  <build_depend>rviz</build_depend>
-  <build_depend>sensor_msgs</build_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>rviz</run_depend>
-  <run_depend>tf</run_depend>
+  <depend>image_transport</depend>
+  <depend>rclcpp</depend>
+  <depend>roslint</depend>
+  <depend>rviz</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf</depend>
 
-  <export>
-      <rviz plugin="${prefix}/plugin_description.xml"/>
-  </export>
+<!--  <export>-->
+<!--      <rviz plugin="${prefix}/plugin_description.xml"/>-->
+<!--  </export>-->
 </package>
