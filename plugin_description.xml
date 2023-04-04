@@ -1,7 +1,7 @@
 <library path="lib/librviz_camera_stream">
   <class name="rviz_camera_stream/CameraPub"
-         type="rviz::CameraPub"
-         base_class_type="rviz::Display">
+         type="rviz_camera_stream::CameraPub"
+         base_class_type="rviz_common::Display">
     <description>
       Same as standard RViz camera, with addition of the ability to
       publish the rendered image to the Image topic.
