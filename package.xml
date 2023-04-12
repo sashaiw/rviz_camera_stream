@@ -17,14 +17,26 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
+  <build_export_depend>rviz_ogre_vendor</build_export_depend>
+
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-gui</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
+  <exec_depend>rviz_ogre_vendor</exec_depend>
+
   <depend>image_transport</depend>
   <depend>rclcpp</depend>
   <depend>roslint</depend>
   <depend>rviz</depend>
   <depend>sensor_msgs</depend>
   <depend>tf</depend>
+  <depend>pluginlib</depend>
+  <depend>rviz_common</depend>
+  <depend>rviz_default_plugins</depend>
 
-<!--  <export>-->
+  <export>
 <!--      <rviz plugin="${prefix}/plugin_description.xml"/>-->
-<!--  </export>-->
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

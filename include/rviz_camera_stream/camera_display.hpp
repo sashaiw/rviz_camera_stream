@@ -43,6 +43,27 @@
 #include <OgreSharedPtr.h>
 #include <OgreTexture.h>
 #include <boost/thread/mutex.hpp>
+#include "rclcpp/rclcpp.hpp"
+
+#include <rviz_common/bit_allocator.hpp>
+#include <rviz_common/display.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/load_resource.hpp>
+#include <rviz_rendering/objects/axes.hpp>
+#include <rviz_common/properties/display_group_visibility_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/uniform_string_stream.hpp>
+#include <rviz_common/validate_floats.hpp>
+#include <image_transport/camera_common.hpp>
+#include <image_transport/image_transport.hpp>
+#include "sensor_msgs/image_encodings.hpp"
+#include <string>
+#include "tf2_ros/transform_listener.h"
 #endif
 
 namespace Ogre
